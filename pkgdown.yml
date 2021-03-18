@@ -1,0 +1,10 @@
+pandoc: '2.5'
+pkgdown: 1.6.1
+pkgdown_sha: ~
+articles:
+  webchem: webchem.html
+last_built: 2021-07-14T18:32Z
+urls:
+  reference: https://docs.ropensci.org/webchem/reference
+  article: https://docs.ropensci.org/webchem/articles
+
