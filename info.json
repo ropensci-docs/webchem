@@ -1,0 +1,12 @@
+{
+  "commit": {
+    "commit": "308054c1faf1fa8d93301861ca822fadded386a2",
+    "author": "Tamás Stirling <49147718+stitam@users.noreply.github.com>",
+    "time": "2024-02-18 20:43:12",
+    "files": 3,
+    "merge": true,
+    "message": "Merge pull request #414 from ropensci/checkoutv4\n\nupdate actions/checkout"
+  },
+  "repo": "https://github.com/ropensci/webchem",
+  "pkg": "webchem"
+}
