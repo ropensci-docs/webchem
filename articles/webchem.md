@@ -1,0 +1,178 @@
+# Getting started with webchem
+
+``` r
+
+library(webchem)
+library(dplyr)
+#> 
+#> Attaching package: 'dplyr'
+#> The following objects are masked from 'package:stats':
+#> 
+#>     filter, lag
+#> The following objects are masked from 'package:base':
+#> 
+#>     intersect, setdiff, setequal, union
+```
+
+The `lc50` dataset provided with `webchem` contains acute ecotoxicity of
+124 insecticides. We’ll work with a subset of these to obtain chemical
+names and octanal/water partitioning coefficients from PubChem, and gas
+chromatography retention indices from the NIST Web Book.
+
+``` r
+
+head(lc50)
+#>        cas        value
+#> 4  50-29-3    12.415277
+#> 12 52-68-6     1.282980
+#> 15 55-38-9    12.168138
+#> 18 56-23-5 35000.000000
+#> 21 56-38-2     1.539119
+#> 36 57-74-9    98.400000
+
+lc50_sub <- lc50[1:15, ]
+```
+
+## Getting Identifiers
+
+Usually a `webchem` workflow starts with translating and retrieving
+chemical identifiers since most chemical information databases use their
+own internal identifiers.
+
+First, we will covert CAS numbers to InChIKey identifiers using the
+Chemical Translation Service. Then, we’ll use these InChiKeys to get
+Pubchem CompoundID numbers, to use for retrieving chemical properties
+from PubChem.
+
+``` r
+
+lc50_sub$inchikey <- unlist(cts_convert(lc50_sub$cas, from = "CAS", to = "InChIKey", match = "first", verbose = FALSE))
+head(lc50_sub)
+#>        cas        value                    inchikey
+#> 4  50-29-3    12.415277 YVGGHNCTFXOJCH-UHFFFAOYSA-N
+#> 12 52-68-6     1.282980 NFACJZMKEDPNKN-UHFFFAOYSA-N
+#> 15 55-38-9    12.168138 PNVJTZOFSHSLTO-UHFFFAOYSA-N
+#> 18 56-23-5 35000.000000 VZGDMQKNWNREIO-UHFFFAOYSA-N
+#> 21 56-38-2     1.539119 LCCNCVORNKJIRZ-UHFFFAOYSA-N
+#> 36 57-74-9    98.400000 BIWJNBZANLAXMG-UHFFFAOYSA-N
+any(is.na(lc50_sub$inchikey))
+#> [1] FALSE
+```
+
+Great, now we can retrieve PubChem CIDs. All `get_*()` functions return
+a data frame containing the query and the retrieved identifier. We can
+merge this with our dataset with
+[`dplyr::full_join()`](https://dplyr.tidyverse.org/reference/mutate-joins.html)
+
+``` r
+
+x <- get_cid(lc50_sub$inchikey, from = "inchikey", match = "first", verbose = FALSE)
+library(dplyr)
+lc50_sub2 <- full_join(lc50_sub, x, by = c("inchikey" = "query"))
+head(lc50_sub2)
+#>       cas        value                    inchikey  cid
+#> 1 50-29-3    12.415277 YVGGHNCTFXOJCH-UHFFFAOYSA-N 3036
+#> 2 52-68-6     1.282980 NFACJZMKEDPNKN-UHFFFAOYSA-N 5853
+#> 3 55-38-9    12.168138 PNVJTZOFSHSLTO-UHFFFAOYSA-N 3346
+#> 4 56-23-5 35000.000000 VZGDMQKNWNREIO-UHFFFAOYSA-N 5943
+#> 5 56-38-2     1.539119 LCCNCVORNKJIRZ-UHFFFAOYSA-N  991
+#> 6 57-74-9    98.400000 BIWJNBZANLAXMG-UHFFFAOYSA-N 5993
+```
+
+## Retrieving Chemical Properties
+
+Functions that query chemical information databases begin with a prefix
+that matches the database. For example, functions to query PubChem begin
+with `pc_` and functions to query ChemSpider begin with `cs_`. In this
+example, we’ll get the names and log octanol/water partitioning
+coefficients for each compound using PubChem, and the number of aromatic
+rings within the chemical structure using ChEMBL.
+
+``` r
+
+y <- pc_prop(lc50_sub2$cid, properties = c("IUPACName", "XLogP"))
+y$CID <- as.character(y$CID)
+lc50_sub3 <- full_join(lc50_sub2, y, by = c("cid" = "CID"))
+head(lc50_sub3)
+#>       cas        value                    inchikey  cid
+#> 1 50-29-3    12.415277 YVGGHNCTFXOJCH-UHFFFAOYSA-N 3036
+#> 2 52-68-6     1.282980 NFACJZMKEDPNKN-UHFFFAOYSA-N 5853
+#> 3 55-38-9    12.168138 PNVJTZOFSHSLTO-UHFFFAOYSA-N 3346
+#> 4 56-23-5 35000.000000 VZGDMQKNWNREIO-UHFFFAOYSA-N 5943
+#> 5 56-38-2     1.539119 LCCNCVORNKJIRZ-UHFFFAOYSA-N  991
+#> 6 57-74-9    98.400000 BIWJNBZANLAXMG-UHFFFAOYSA-N 5993
+#>                                                                      IUPACName
+#> 1                  1-chloro-4-[2,2,2-trichloro-1-(4-chlorophenyl)ethyl]benzene
+#> 2                                 2,2,2-trichloro-1-dimethoxyphosphorylethanol
+#> 3 dimethoxy-(3-methyl-4-methylsulfanylphenoxy)-sulfanylidene-lambda5-phosphane
+#> 4                                                           tetrachloromethane
+#> 5                    diethoxy-(4-nitrophenoxy)-sulfanylidene-lambda5-phosphane
+#> 6                    1,3,4,7,8,9,10,10-octachlorotricyclo[5.2.1.02,6]dec-8-ene
+#>   XLogP
+#> 1   6.9
+#> 2   0.5
+#> 3   4.1
+#> 4   2.8
+#> 5   3.8
+#> 6   4.9
+```
+
+The IUPAC names are long and unwieldy, and one could use
+[`pc_synonyms()`](https://docs.ropensci.org/webchem/reference/pc_synonyms.md)
+to choose better names. Several other functions return synonyms as well,
+even though they are not explicitly translator type functions. We’ll see
+an example of that next.
+
+Many of the chemical databases `webchem` can query contain vast amounts
+of information in a variety of structures. Therefore, some `webchem`
+functions return nested lists rather than data frames.
+[`chembl_query()`](https://docs.ropensci.org/webchem/reference/chembl_query.md)
+is one such function.
+
+To look up entries in ChEMBL we need ChEMBL ID-s. These can be found on
+the PubChem page of each compound within the ChEMBL ID section and can
+be programmatically retrieved using
+[`pc_sect()`](https://docs.ropensci.org/webchem/reference/pc_sect.md).
+
+``` r
+
+lc50_sub3$chembl_id <- pc_sect(x$cid, "ChEMBL ID")$Result
+out <- chembl_query(lc50_sub3$chembl_id, verbose = FALSE)
+```
+
+`out` is a nested list which you can inspect with
+[`View()`](https://rdrr.io/r/utils/View.html). It has an element for
+each query, and within each query, many elements corresponding to
+different properties in the database. To extract a single property from
+all queries, we need to use a mapping function such as
+[`sapply()`](https://rdrr.io/r/base/lapply.html).
+
+``` r
+
+lc50_sub3$aromatic_rings <- sapply(out, function(y) {
+  # return NA if entry cannot be found in ChEMBL
+  if (length(y) == 1 && is.na(y)) return(NA)
+  # return the number of aromatic rings
+  y$molecule_properties$aromatic_rings
+})
+lc50_sub3$common_name <- sapply(out, function(y) {
+  # return NA if entry cannot be found in ChEMBL
+  if (length(y) == 1 && is.na(y)) return(NA)
+  # return preferred name
+  ifelse(!is.null(y$pref_name), y$pref_name, NA)
+})
+```
+
+``` r
+
+#tidy up columns
+lc50_done <- dplyr::select(lc50_sub3, common_name, cas, inchikey, XLogP, aromatic_rings)
+head(lc50_done)
+#>            common_name     cas                    inchikey XLogP aromatic_rings
+#> 1     CHLOROPHENOTHANE 50-29-3 YVGGHNCTFXOJCH-UHFFFAOYSA-N   6.9              2
+#> 2          TRICHLORFON 52-68-6 NFACJZMKEDPNKN-UHFFFAOYSA-N   0.5              0
+#> 3             FENTHION 55-38-9 PNVJTZOFSHSLTO-UHFFFAOYSA-N   4.1              1
+#> 4 CARBON TETRACHLORIDE 56-23-5 VZGDMQKNWNREIO-UHFFFAOYSA-N   2.8              0
+#> 5            PARATHION 56-38-2 LCCNCVORNKJIRZ-UHFFFAOYSA-N   3.8              1
+#> 6            CHLORDANE 57-74-9 BIWJNBZANLAXMG-UHFFFAOYSA-N   4.9              0
+```

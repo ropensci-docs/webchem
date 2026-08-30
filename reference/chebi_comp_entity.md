@@ -1,0 +1,75 @@
+# Retrieve Complete Entity from ChEBI
+
+Returns a list of Complete ChEBI entities. ChEBI data are parsed as
+data.frames ("properties", "chebiid_snd", "synonyms", "iupacnames",
+"formulae", "regnumbers", "citations", "dblinks", "parents", "children",
+"comments", "origins") or as a list ("chem_structure") in the list. The
+SOAP protocol is used <https://www.ebi.ac.uk/chebi/webServices.do>.
+
+## Usage
+
+``` r
+chebi_comp_entity(chebiid, verbose = getOption("verbose"), ...)
+```
+
+## Arguments
+
+- chebiid:
+
+  character; search term (i.e. chebiid).
+
+- verbose:
+
+  logical; should a verbose output be printed on the console?
+
+- ...:
+
+  optional arguments
+
+## Value
+
+returns a list of data.frames or lists containing a complete ChEBI
+entity
+
+## References
+
+Hastings J, Owen G, Dekker A, Ennis M, Kale N, Muthukrishnan V, Turner
+S, Swainston N, Mendes P, Steinbeck C. (2016). ChEBI in 2016: Improved
+services and an expanding collection of metabolites. Nucleic Acids Res.
+
+Hastings, J., de Matos, P., Dekker, A., Ennis, M., Harsha, B., Kale, N.,
+Muthukrishnan, V., Owen, G., Turner, S., Williams, M., and Steinbeck, C.
+(2013) The ChEBI reference database and ontology for biologically
+relevant chemistry: enhancements for 2013. Nucleic Acids Res.
+
+de Matos, P., Alcantara, R., Dekker, A., Ennis, M., Hastings, J., Haug,
+K., Spiteri, I., Turner, S., and Steinbeck, C. (2010) Chemical entities
+of biological interest: an update. Nucleic Acids Res. Degtyarenko, K.,
+Hastings, J., de Matos, P., and Ennis, M. (2009). ChEBI: an open
+bioinformatics and cheminformatics resource. Current protocols in
+bioinformatics / editoral board, Andreas D. Baxevanis et al., Chapter
+14.
+
+Degtyarenko, K., de Matos, P., Ennis, M., Hastings, J., Zbinden, M.,
+McNaught, A., Alcántara, R., Darsow, M., Guedj, M. and Ashburner, M.
+(2008) ChEBI: a database and ontology for chemical entities of
+biological interest. Nucleic Acids Res. 36, D344–D350.
+
+Eduard Szöcs, Tamás Stirling, Eric R. Scott, Andreas Scharmüller, Ralf
+B. Schäfer (2020). webchem: An R Package to Retrieve Chemical
+Information from the Web. Journal of Statistical Software, 93(13).
+[doi:10.18637/jss.v093.i13](https://doi.org/10.18637/jss.v093.i13) .
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+# might fail if API is not available
+chebi_comp_entity('CHEBI:27744')
+
+# multiple inputs
+comp <- c('CHEBI:27744', 'CHEBI:27744')
+chebi_comp_entity(comp)
+
+} # }
+```

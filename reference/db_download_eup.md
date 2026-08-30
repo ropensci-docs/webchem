@@ -1,0 +1,45 @@
+# Download the EU Pesticides database and convert to SQLite
+
+This function downloads the EU Pesticides database in JSON format and
+converts it to a local SQLite database for offline use. Note, the
+current implementation of the database only contains information about
+active substances (no residues and maximum residue limits).
+
+## Usage
+
+``` r
+db_download_eup(verbose = getOption("verbose"))
+```
+
+## Arguments
+
+- verbose:
+
+  logical; print verbose messages to the console?
+
+## Value
+
+The path to the created SQLite database file.
+
+## Details
+
+By default the SQLite database is stored in the cache directory of the
+webchem package. You can view the current cache directory by using the
+\`wc_cache\$cache_path_get()\` function, and you can change the cache
+directory by using the \`wc_cache\$cache_path_set()\` function.
+
+## References
+
+You can find more information about the EU Pesticides database at
+<https://food.ec.europa.eu/plants/pesticides/eu-pesticides-database_en>.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+# Set cache path to a temporary directory
+wc_cache$cache_path_set(full_path = tempdir())
+# Download and convert the EU Pesticides database
+db_download_eup(verbose = TRUE)
+} # }
+```
