@@ -1,0 +1,13 @@
+{
+  "commit": {
+    "commit": "710008f92f7ee66dba8c4890462536dc5d04f4ec",
+    "author": "Tamas Stirling <stirling.tamas@stifabio.com>",
+    "time": "2026-10-15T19:14:21Z",
+    "files": 2,
+    "merge": false,
+    "message": "List R Consortium grants in README\n"
+  },
+  "repo": "https://github.com/ropensci/webchem",
+  "pkg": "webchem",
+  "time": "2026-10-15T20:32:49Z"
+}

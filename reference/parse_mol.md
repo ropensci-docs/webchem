@@ -1,0 +1,39 @@
+# Parse Molfile (as returned by ChemSpider) into a R-object.
+
+Parse Molfile (as returned by ChemSpider) into a R-object.
+
+## Usage
+
+``` r
+parse_mol(string)
+```
+
+## Arguments
+
+- string:
+
+  molfile as one string
+
+## Value
+
+A list with of four entries: header (eh), counts line (cl), atom block
+(ab) and bond block (bb).
+
+header: a = number of atoms, b = number of bonds, l = number of atom
+lists, f = obsolete, c = chiral flag (0=not chiral, 1 = chiral), s =
+number of stext entries, x, r, p, i = obsolete, m = 999, v0 version
+
+atom block: x, y, z = atom coordinates, a = mass difference, c= charge,
+s= stereo parity, h = hydrogen count 1, b = stereo care box, v =
+valence, h = h0 designator, r, i = not used, m = atom-atom mapping
+number, n = inversion/retention flag, e = exact change flag
+
+bond block: 1 = first atom, 2 = second atom, t = bond type, s = stereo
+type, x = not used, r = bond typology, c = reacting center status.
+
+## References
+
+Grabner, M., Varmuza, K., & Dehmer, M. (2012). RMol: a toolset for
+transforming SD/Molfile structure information into R objects. Source
+Code for Biology and Medicine, 7, 12.
+[doi:10.1186/1751-0473-7-12](https://doi.org/10.1186/1751-0473-7-12)
